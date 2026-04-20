@@ -5,6 +5,7 @@ using namespace std;
 void addContact();
 void viewContacts();
 void triggerSOS();
+void showSafeRoute();
 
 int main() {
     int choice;
@@ -14,7 +15,8 @@ int main() {
         cout << "1. Add Contact\n";
         cout << "2. View Contacts\n";
         cout << "3. Trigger SOS\n";
-        cout << "4. Exit\n";
+        cout << "4. Find Safe Route\n";
+        cout << "5. Exit\n";
         cout << "Enter your choice: ";
         cin >> choice;
 
@@ -29,8 +31,10 @@ int main() {
         triggerSOS();
         break;
     case 4:
-        cout << "Exiting...\n";
-        return 0;
+        showSafeRoute();
+        break;
+     case 5:
+       return 0;
     default:
         cout << "Invalid choice\n";
 }
