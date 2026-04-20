@@ -1,5 +1,5 @@
 body {
-    background: #111827;
+    background: #0f172a;
     font-family: Arial;
     display: flex;
     justify-content: center;
@@ -7,34 +7,41 @@ body {
     height: 100vh;
 }
 
-/* Phone-like container */
 .phone {
-    width: 300px;
-    background: #1f2937;
+    width: 320px;
+    background: #1e293b;
     padding: 20px;
     border-radius: 20px;
     text-align: center;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    color: white;
 }
 
-h2 {
-    margin-bottom: 20px;
+.card {
+    background: #334155;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
 }
 
-/* Buttons */
+input {
+    width: 90%;
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 6px;
+    border: none;
+}
+
 button {
     width: 100%;
-    margin: 10px 0;
-    padding: 12px;
+    margin: 8px 0;
+    padding: 10px;
     border: none;
     border-radius: 10px;
-    font-size: 16px;
     background: #2563eb;
     color: white;
     cursor: pointer;
 }
 
-/* SOS button special */
 .sos {
     background: #dc2626;
     font-size: 18px;
