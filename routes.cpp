@@ -9,8 +9,9 @@ void showSafeRoute() {
     cin >> blocked;
 
     if (blocked == "Market-Hospital") {
-        cout << "Safe Route: Home -> School -> Shelter -> Hospital\n";
-    } else {
-        cout << "Safe Route: Home -> Market -> Hospital\n";
+    cout << "Safe Route: Home -> School -> Shelter -> Hospital\n";
+    }
+    else if (blocked == "Home-Market") {
+    cout << "Safe Route: Home -> School -> Hospital\n";
     }
 }
