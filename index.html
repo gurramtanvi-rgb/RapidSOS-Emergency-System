@@ -1,1 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RapidSOS App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+<div class="phone">
+
+    <h2>🚨 RapidSOS</h2>
+    <p id="location">📍 Detecting location...</p>
+
+    <!-- SOS -->
+    <button class="sos" onclick="triggerSOS()">🚨 SOS</button>
+
+    <!-- Add Contact -->
+    <div class="card">
+        <input type="text" id="name" placeholder="Name">
+        <input type="text" id="phone" placeholder="Phone">
+        <button onclick="addContact()">➕ Add</button>
+    </div>
+
+    <!-- Actions -->
+    <button onclick="viewContacts()">📞 View Contacts</button>
+
+    <div class="card">
+        <input type="text" id="route" placeholder="Blocked Route">
+        <button onclick="findRoute()">🛣️ Find Route</button>
+    </div>
+
+    <div id="output"></div>
+
+</div>
+
+<script>
+let contacts = [];
+
+// Fake location
+setTimeout(() => {
+    document.getElementById("location").innerHTML =
+    "📍 Location: Anantapur";
+}, 1000);
+
+// Add Contact
+function addContact() {
+    let name = document.getElementById("name").value;
+    let phone = document.getElementById("phone").value;
+
+    if (!name || !phone) {
+        output("⚠️ Enter details!");
+        return;
+    }
+
+    contacts.push({name, phone});
+    output("✅ Contact Added!");
+}
+
+// View Contacts
+function viewContacts() {
+    if (contacts.length === 0) {
+        output("No contacts found");
+        return;
+    }
+
+    let list = "📞 Contacts:<br>";
+    contacts.forEach(c => {
+        list += `👤 ${c.name} - ${c.phone}<br>`;
+    });
+
+    output(list);
+}
+
+// SOS
+function triggerSOS() {
+    if (contacts.length === 0) {
+        output("⚠️ No contacts!");
+        return;
+    }
+
+    let msg = "🚨 SOS SENT 🚨<br>📍 Location: Anantapur<br><br>";
+
+    contacts.forEach(c => {
+        msg += `Alert sent to ${c.name}<br>`;
+    });
+
+    output(msg);
+}
+
+// Route
+function findRoute() {
+    let blocked = document.getElementById("route").value;
+
+    if (blocked === "Market-Hospital") {
+        output("🛣️ Safe Route:<br>Home → School → Shelter → Hospital");
+    } else if (blocked === "Home-Market") {
+        output("🛣️ Safe Route:<br>Home → School → Hospital");
+    } else {
+        output("🛣️ Default Route:<br>Home → Market → Hospital");
+    }
+}
+
+// Output helper
+function output(msg) {
+    document.getElementById("output").innerHTML = msg;
+}
+</script>
+
+</body>
+</html>
