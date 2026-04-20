@@ -4,6 +4,7 @@ using namespace std;
 // Function declarations
 void addContact();
 void viewContacts();
+void triggerSOS();
 
 int main() {
     int choice;
@@ -25,7 +26,7 @@ int main() {
         viewContacts();
         break;
     case 3:
-        cout << "SOS Triggered!\n";
+        triggerSOS();
         break;
     case 4:
         cout << "Exiting...\n";
