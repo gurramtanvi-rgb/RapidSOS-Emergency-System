@@ -3,6 +3,7 @@
 <head>
     <title>RapidSOS App</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
@@ -36,19 +37,83 @@
 <script>
 let contacts = [];
 
-// Fake location
-setTimeout(() => {
-    document.getElementById("location").innerHTML =
-    "📍 Location: Anantapur";
-}, 1000);
+// 🌍 Get REAL live location
 
-// Add Contact
+function getLocation() {
+
+    if (navigator.geolocation) {
+
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+
+                let lat = pos.coords.latitude;
+                let lon = pos.coords.longitude;
+
+                try {
+
+                    let response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+                    );
+
+                    let data = await response.json();
+
+                    let city =
+                        data.address.city ||
+                        data.address.town ||
+                        data.address.village ||
+                        data.address.state ||
+                        "Unknown";
+
+                    document.getElementById("location").innerHTML =
+                        `📍 Location: ${city}`;
+
+                } catch (error) {
+
+                    document.getElementById("location").innerHTML =
+                        "📍 Location detected";
+
+                }
+
+            },
+
+            (error) => {
+
+                document.getElementById("location").innerHTML =
+                    "⚠️ Please allow location access";
+
+            }
+
+        );
+
+    } else {
+
+        document.getElementById("location").innerHTML =
+            "❌ Location not supported";
+
+    }
+
+}
+
+// Call location on load
+getLocation();
+
+// ➕ Add Contact (NO DUPLICATES)
 function addContact() {
-    let name = document.getElementById("name").value;
-    let phone = document.getElementById("phone").value;
+    let name = document.getElementById("name").value.trim();
+    let phone = document.getElementById("phone").value.trim();
 
     if (!name || !phone) {
-        output("⚠️ Enter details!");
+        output("⚠️ Enter all details!");
+        return;
+    }
+
+    // Check duplicates
+    let exists = contacts.some(c =>
+        c.name === name || c.phone === phone
+    );
+
+    if (exists) {
+        output("❌ Duplicate contact not allowed!");
         return;
     }
 
@@ -56,7 +121,7 @@ function addContact() {
     output("✅ Contact Added!");
 }
 
-// View Contacts
+// 📞 View Contacts
 function viewContacts() {
     if (contacts.length === 0) {
         output("No contacts found");
@@ -71,14 +136,16 @@ function viewContacts() {
     output(list);
 }
 
-// SOS
+// 🚨 SOS
 function triggerSOS() {
     if (contacts.length === 0) {
         output("⚠️ No contacts!");
         return;
     }
 
-    let msg = "🚨 SOS SENT 🚨<br>📍 Location: Anantapur<br><br>";
+    let locationText = document.getElementById("location").innerText;
+
+    let msg = "🚨 SOS SENT 🚨<br>" + locationText + "<br><br>";
 
     contacts.forEach(c => {
         msg += `Alert sent to ${c.name}<br>`;
@@ -87,7 +154,7 @@ function triggerSOS() {
     output(msg);
 }
 
-// Route
+// 🛣️ Route
 function findRoute() {
     let blocked = document.getElementById("route").value;
 
@@ -103,6 +170,13 @@ function findRoute() {
 // Output helper
 function output(msg) {
     document.getElementById("output").innerHTML = msg;
+}
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js")
+    .then(() => console.log("Service Worker Registered"));
 }
 </script>
 
