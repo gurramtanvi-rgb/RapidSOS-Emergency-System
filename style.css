@@ -1,4 +1,8 @@
 /* 🌍 Overall Page */
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     padding:0;
@@ -47,6 +51,7 @@ button {
     border-radius: 12px;
     font-size: 16px;
     cursor: pointer;
+    box-sizing: border-box;
     transition: 0.3s;
 }
 
@@ -66,17 +71,17 @@ button:hover {
 /* 🧊 Cards */
 .card {
     background: rgba(255, 255, 255, 0.15);
-    padding: 12px;
+    padding: 15px;
     border-radius: 15px;
-    margin: 10px 0;
+    margin: 12px 0;
 }
 
 /* ✏️ Inputs */
 input {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     margin: 6px 0;
-    border-radius: 10px;
+    border-radius: 12px;
     border: none;
     outline: none;
 }
