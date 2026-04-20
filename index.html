@@ -1,184 +1,424 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>RapidSOS App</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
+<title>RapidSOS App</title>
+
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 </head>
+
 <body>
 
 <div class="phone">
 
-    <h2>🚨 RapidSOS</h2>
-    <p id="location">📍 Detecting location...</p>
+<h2>🚨 RapidSOS</h2>
 
-    <!-- SOS -->
-    <button class="sos" onclick="triggerSOS()">🚨 SOS</button>
+<p id="location">📍 Detecting location...</p>
 
-    <!-- Add Contact -->
-    <div class="card">
-        <input type="text" id="name" placeholder="Name">
-        <input type="text" id="phone" placeholder="Phone">
-        <button onclick="addContact()">➕ Add</button>
-    </div>
+<!-- 🚨 SOS BUTTON -->
+<button class="sos" onclick="triggerSOS()">🚨 SOS</button>
 
-    <!-- Actions -->
-    <button onclick="viewContacts()">📞 View Contacts</button>
+<button class="sos" onclick="sendToAll()">📨 Alert All</button>
 
-    <div class="card">
-        <input type="text" id="route" placeholder="Blocked Route">
-        <button onclick="findRoute()">🛣️ Find Route</button>
-    </div>
+<button class="sos" onclick="callPolice()">📞 Call Police</button>
 
-    <div id="output"></div>
+<button class="sos" onclick="startVoice()">🎤 Voice SOS</button>
+
+<!-- 🚨 DEFAULT EMERGENCY NUMBERS -->
+
+<div class="card">
+
+<h3>🚨 Emergency Numbers</h3>
+
+<p>🚓 Police: <a href="tel:100">Call</a></p>
+<p>🚑 Ambulance: <a href="tel:108">Call</a></p>
+<p>🔥 Fire: <a href="tel:101">Call</a></p>
+
+</div>
+
+<!-- ➕ ADD CONTACT -->
+
+<div class="card">
+
+<input type="text" id="name" placeholder="Name">
+
+<input type="text" id="phone" placeholder="Phone">
+
+<button onclick="addContact()">➕ Add Contact</button>
+
+</div>
+
+<button onclick="viewContacts()">📞 View Contacts</button>
+
+<!-- 🛣️ ROUTE -->
+
+<div class="card">
+
+<input type="text" id="route" placeholder="Blocked Route">
+
+<button onclick="findRoute()">🛣️ Find Route</button>
+
+</div>
+
+<div id="output"></div>
 
 </div>
 
 <script>
-let contacts = [];
 
-// 🌍 Get REAL live location
+// Default Contacts
+
+let contacts = [
+
+{ name: "🚓 Police", phone: "100" },
+
+{ name: "🚑 Ambulance", phone: "108" },
+
+{ name: "🔥 Fire", phone: "101" }
+
+];
+
+
+// 🌍 GET LOCATION
 
 function getLocation() {
 
-    if (navigator.geolocation) {
+if (navigator.geolocation) {
 
-        navigator.geolocation.getCurrentPosition(
-            async (pos) => {
+navigator.geolocation.getCurrentPosition(
 
-                let lat = pos.coords.latitude;
-                let lon = pos.coords.longitude;
+async (pos) => {
 
-                try {
+window.lat = pos.coords.latitude;
 
-                    let response = await fetch(
-                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
-                    );
+window.lon = pos.coords.longitude;
 
-                    let data = await response.json();
+try {
 
-                    let city =
-                        data.address.city ||
-                        data.address.town ||
-                        data.address.village ||
-                        data.address.state ||
-                        "Unknown";
+let response = await fetch(
 
-                    document.getElementById("location").innerHTML =
-                        `📍 Location: ${city}`;
+`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
 
-                } catch (error) {
+);
 
-                    document.getElementById("location").innerHTML =
-                        "📍 Location detected";
+let data = await response.json();
 
-                }
+let city =
 
-            },
+data.address.city ||
 
-            (error) => {
+data.address.town ||
 
-                document.getElementById("location").innerHTML =
-                    "⚠️ Please allow location access";
+data.address.village ||
 
-            }
+"Unknown";
 
-        );
+document.getElementById("location").innerHTML =
 
-    } else {
-
-        document.getElementById("location").innerHTML =
-            "❌ Location not supported";
-
-    }
+`📍 Location: ${city}`;
 
 }
 
-// Call location on load
+catch {
+
+document.getElementById("location").innerHTML =
+
+"📍 Location detected";
+
+}
+
+},
+
+() => {
+
+document.getElementById("location").innerHTML =
+
+"⚠️ Allow location access";
+
+}
+
+);
+
+}
+
+}
+
 getLocation();
 
-// ➕ Add Contact (NO DUPLICATES)
+
+// ➕ ADD CONTACT
+
 function addContact() {
-    let name = document.getElementById("name").value.trim();
-    let phone = document.getElementById("phone").value.trim();
 
-    if (!name || !phone) {
-        output("⚠️ Enter all details!");
-        return;
-    }
+let name = document.getElementById("name").value.trim();
 
-    // Check duplicates
-    let exists = contacts.some(c =>
-        c.name === name || c.phone === phone
-    );
+let phone = document.getElementById("phone").value.trim();
 
-    if (exists) {
-        output("❌ Duplicate contact not allowed!");
-        return;
-    }
+if (!name || !phone) {
 
-    contacts.push({name, phone});
-    output("✅ Contact Added!");
+output("⚠️ Enter details!");
+
+return;
+
 }
 
-// 📞 View Contacts
+let exists = contacts.some(c =>
+
+c.name === name || c.phone === phone
+
+);
+
+if (exists) {
+
+output("❌ Duplicate contact not allowed!");
+
+return;
+
+}
+
+contacts.push({ name, phone });
+
+output("✅ Contact Added!");
+
+}
+
+
+// 📞 VIEW CONTACTS
+
 function viewContacts() {
-    if (contacts.length === 0) {
-        output("No contacts found");
-        return;
-    }
 
-    let list = "📞 Contacts:<br>";
-    contacts.forEach(c => {
-        list += `👤 ${c.name} - ${c.phone}<br>`;
-    });
+let list = "📞 Contacts:<br>";
 
-    output(list);
+contacts.forEach(c => {
+
+list += `👤 ${c.name} - <a href="tel:${c.phone}">${c.phone}</a><br>`;
+
+});
+
+output(list);
+
 }
 
-// 🚨 SOS
+
+// 🚨 SOS COUNTDOWN
+
 function triggerSOS() {
-    if (contacts.length === 0) {
-        output("⚠️ No contacts!");
-        return;
-    }
 
-    let locationText = document.getElementById("location").innerText;
+let count = 3;
 
-    let msg = "🚨 SOS SENT 🚨<br>" + locationText + "<br><br>";
+let box = document.getElementById("output");
 
-    contacts.forEach(c => {
-        msg += `Alert sent to ${c.name}<br>`;
-    });
+let timer = setInterval(() => {
 
-    output(msg);
+box.innerHTML = `🚨 Sending SOS in ${count}...`;
+
+count--;
+
+if (count < 0) {
+
+clearInterval(timer);
+
+sendSOS();
+
 }
 
-// 🛣️ Route
+}, 1000);
+
+}
+
+
+// 📩 SEND SOS
+
+function sendSOS() {
+
+let locationText = document.getElementById("location").innerText;
+
+let mapLink =
+
+window.lat ?
+
+`https://www.google.com/maps?q=${lat},${lon}`
+
+: "";
+
+let message =
+
+`🚨 EMERGENCY!\n${locationText}\n${mapLink}`;
+
+window.location.href =
+
+`sms:?body=${encodeURIComponent(message)}`;
+
+output("🚨 SOS Ready!");
+
+}
+
+
+// 📨 SEND TO ALL
+
+function sendToAll() {
+
+if (contacts.length === 0) {
+
+output("⚠️ No contacts!");
+
+return;
+
+}
+
+let locationText =
+
+document.getElementById("location").innerText;
+
+let numbers = contacts.map(c => c.phone).join(",");
+
+let mapLink =
+
+window.lat ?
+
+`https://www.google.com/maps?q=${lat},${lon}`
+
+: "";
+
+let message =
+
+`🚨 EMERGENCY!\n${locationText}\n${mapLink}`;
+
+window.location.href =
+
+`sms:${numbers}?body=${encodeURIComponent(message)}`;
+
+output("📨 Alert ready!");
+
+}
+
+
+// 📞 CALL POLICE
+
+function callPolice() {
+
+window.location.href = "tel:100";
+
+}
+
+
+// 🎤 VOICE SOS
+
+function startVoice() {
+
+let recognition =
+
+new (window.SpeechRecognition ||
+
+window.webkitSpeechRecognition)();
+
+recognition.start();
+
+recognition.onresult = function(event) {
+
+let speech =
+
+event.results[0][0].transcript.toLowerCase();
+
+if (speech.includes("help")) {
+
+triggerSOS();
+
+}
+
+};
+
+}
+
+
+// 📳 SHAKE DETECTION
+
+let lastX = null;
+
+window.addEventListener("devicemotion", function(event) {
+
+let x = event.accelerationIncludingGravity.x;
+
+if (lastX !== null) {
+
+let diff = Math.abs(x - lastX);
+
+if (diff > 15) {
+
+triggerSOS();
+
+}
+
+}
+
+lastX = x;
+
+});
+
+
+// 🛣️ ROUTE
+
 function findRoute() {
-    let blocked = document.getElementById("route").value;
 
-    if (blocked === "Market-Hospital") {
-        output("🛣️ Safe Route:<br>Home → School → Shelter → Hospital");
-    } else if (blocked === "Home-Market") {
-        output("🛣️ Safe Route:<br>Home → School → Hospital");
-    } else {
-        output("🛣️ Default Route:<br>Home → Market → Hospital");
-    }
+let blocked =
+
+document.getElementById("route").value;
+
+if (blocked === "Market-Hospital") {
+
+output(
+
+"🛣️ Safe Route:<br>Home → School → Shelter → Hospital"
+
+);
+
 }
+
+else if (blocked === "Home-Market") {
+
+output(
+
+"🛣️ Safe Route:<br>Home → School → Hospital"
+
+);
+
+}
+
+else {
+
+output(
+
+"🛣️ Default Route:<br>Home → Market → Hospital"
+
+);
+
+}
+
+}
+
 
 // Output helper
-function output(msg) {
-    document.getElementById("output").innerHTML = msg;
-}
-</script>
 
-<script>
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("service-worker.js")
-    .then(() => console.log("Service Worker Registered"));
+function output(msg) {
+
+document.getElementById("output").innerHTML = msg;
+
 }
+
+
+// Service Worker
+
+if ("serviceWorker" in navigator) {
+
+navigator.serviceWorker.register("service-worker.js");
+
+}
+
 </script>
 
 </body>
+
 </html>
