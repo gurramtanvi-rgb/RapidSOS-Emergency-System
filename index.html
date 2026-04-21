@@ -1,424 +1,879 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>RapidSOS App</title>
-
-<link rel="stylesheet" href="style.css">
-<link rel="manifest" href="manifest.json">
-
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RapidSOS — Emergency Response</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-
-/* 🚨 Emergency Grid Layout */
-
-.emergency-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  justify-items: center;
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#FF2D2D;--red2:#CC1A1A;--red-glow:rgba(255,45,45,0.22);--red-dim:rgba(255,45,45,0.1);
+  --amber:#FF8C00;--amber-dim:rgba(255,140,0,0.1);
+  --teal:#00E5A0;--teal2:#00B880;--teal-dim:rgba(0,229,160,0.1);
+  --blue:#2D9CFF;--blue-dim:rgba(45,156,255,0.1);
+  --pink:#FF4F9A;--pink-dim:rgba(255,79,154,0.1);
+  --green:#39D98A;--green-dim:rgba(57,217,138,0.1);
+  --bg:#0a0f1a;
+  --bg2:#0d1422;
+  --s1:#111827;--s2:#161e2e;--s3:#1c2540;--s4:#232d4a;--s5:#2b3658;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);--border3:rgba(255,255,255,0.22);
+  --text:#f0f6ff;--muted:#7a8aaa;--dim:#3d4f70;
+  --glow-red:0 0 24px rgba(255,45,45,0.35);
+  --glow-teal:0 0 20px rgba(0,229,160,0.3);
 }
 
-.emergency-grid button {
-  width: 100%;
-  padding: 10px;
-  font-size: 14px;
-  border-radius: 12px;
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden}
+h1,h2,h3,h4,.font-syne{font-family:'Syne',sans-serif}
+
+/* — ANIMATED GRID BG — */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(255,45,45,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,45,45,0.03) 1px,transparent 1px);
+  background-size:40px 40px;
+  animation:gridShift 20s linear infinite;
+}
+@keyframes gridShift{from{background-position:0 0}to{background-position:40px 40px}}
+
+body::after{
+  content:'';position:fixed;top:-60%;left:-30%;width:120%;height:120%;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(255,45,45,0.07),transparent 65%),
+             radial-gradient(ellipse 40% 30% at 10% 80%,rgba(0,229,160,0.04),transparent 60%);
 }
 
-/* Center last row */
+/* — SPLASH — */
+#splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .7s ease}
+.sp-pulse-ring{position:relative;width:110px;height:110px;display:flex;align-items:center;justify-content:center}
+.sp-pulse-ring::before,.sp-pulse-ring::after{content:'';position:absolute;border-radius:50%;border:1.5px solid var(--red);animation:ringExpand 2s ease-out infinite}
+.sp-pulse-ring::before{inset:0;animation-delay:0s}
+.sp-pulse-ring::after{inset:-14px;animation-delay:.6s;opacity:.5}
+@keyframes ringExpand{0%{transform:scale(.85);opacity:.8}100%{transform:scale(1.15);opacity:0}}
+.sp-inner-icon{font-size:42px;z-index:1;animation:heartbeat 1.4s ease-in-out infinite}
+@keyframes heartbeat{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.sp-logo-text{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;letter-spacing:2px;margin-top:22px;
+  background:linear-gradient(135deg,#fff 40%,var(--red) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:fadeUp .5s .2s ease forwards;opacity:0}
+.sp-sub{font-size:11px;letter-spacing:3.5px;color:var(--muted);text-transform:uppercase;margin-top:8px;animation:fadeUp .5s .4s ease forwards;opacity:0}
+.sp-bar-wrap{width:180px;height:2px;background:var(--s3);border-radius:2px;margin-top:30px;overflow:hidden;animation:fadeUp .5s .5s ease forwards;opacity:0}
+.sp-bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--red2),var(--red),#ff6060);border-radius:2px;animation:fillBar 1.8s .6s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fillBar{to{width:100%}}
 
-.emergency-grid button:nth-last-child(2):nth-child(3n+1) {
-  grid-column: 2;
-}
+/* — APP SHELL — */
+#app{display:none;width:100%;max-width:440px;padding-bottom:40px;position:relative;z-index:1}
 
-.emergency-grid button:last-child:nth-child(3n+1) {
-  grid-column: 2;
-}
+/* — HEADER — */
+.app-header{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 0}
+.brand{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;display:flex;align-items:center;gap:9px;letter-spacing:.5px}
+.brand-text{background:linear-gradient(135deg,#fff,#ffcfcf);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.live-dot{width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:livePulse 1.5s ease-in-out infinite}
+@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.8)}}
+.loc-pill{display:flex;align-items:center;gap:7px;background:var(--s2);border:1px solid var(--border2);border-radius:22px;padding:6px 13px;max-width:175px;cursor:pointer;transition:.2s}
+.loc-pill:hover{border-color:var(--teal);background:var(--s3)}
+.loc-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0;box-shadow:0 0 6px var(--teal);animation:locBlink 2s ease-in-out infinite}
+@keyframes locBlink{0%,100%{opacity:1}50%{opacity:.3}}
+.loc-txt{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;transition:.2s}
+.loc-txt.active{color:var(--teal)}
 
+/* — STATUS CHIPS — */
+.status-bar{display:flex;gap:8px;padding:12px 18px 0}
+.stat-chip{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;transition:.2s}
+.stat-chip:hover{border-color:var(--border2)}
+.stat-val{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text)}
+.stat-val.ok{color:var(--teal)}
+.stat-val.warn{color:var(--amber)}
+.stat-val.fail{color:var(--red)}
+.stat-lbl{font-size:9.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.9px;margin-top:2px}
+
+/* — SOS HERO ZONE — */
+.sos-zone{margin:14px 18px;background:linear-gradient(145deg,#110608,#1a0a0a);border:1px solid rgba(255,45,45,.25);border-radius:24px;padding:22px;position:relative;overflow:hidden}
+.sos-zone::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(255,45,45,0.13),transparent 70%);pointer-events:none}
+.sos-decor1{position:absolute;top:-50px;right:-50px;width:180px;height:180px;border-radius:50%;border:1px solid rgba(255,45,45,0.07);pointer-events:none}
+.sos-decor2{position:absolute;top:-25px;right:-25px;width:130px;height:130px;border-radius:50%;border:1px solid rgba(255,45,45,0.1);pointer-events:none}
+
+/* MAIN SOS BUTTON */
+.sos-main-btn{width:100%;padding:22px;border:none;border-radius:18px;cursor:pointer;position:relative;overflow:hidden;transition:.15s;
+  background:linear-gradient(135deg,#cc1a1a,var(--red),#ff5555);
+  color:#fff;font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:1.5px;
+  animation:mainPulse 2s ease-in-out infinite;
+  box-shadow:0 8px 32px rgba(255,45,45,0.4),inset 0 1px 0 rgba(255,255,255,0.15)}
+.sos-main-btn:active{transform:scale(.97)}
+.sos-main-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.12),transparent);pointer-events:none}
+@keyframes mainPulse{0%,100%{box-shadow:0 8px 32px rgba(255,45,45,0.4),0 0 0 0 rgba(255,45,45,0.5)}65%{box-shadow:0 8px 32px rgba(255,45,45,0.4),0 0 0 20px rgba(255,45,45,0)}}
+
+/* SOS QUICK CHIPS */
+.sos-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.sos-chip{background:var(--s3);border:1px solid var(--border2);border-radius:13px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;transition:.25s}
+.sos-chip:hover{background:var(--s4);transform:translateY(-2px)}
+.sos-chip:active{transform:scale(.95)}
+.chip-ico{font-size:17px}
+.chip-lbl{font-size:10px;color:var(--muted);font-weight:600;text-align:center;letter-spacing:.4px}
+.chip-alert{border-color:rgba(255,45,45,.3);background:rgba(255,45,45,.07)}
+.chip-alert:hover{border-color:rgba(255,45,45,.5);background:rgba(255,45,45,.12)}
+.chip-police{border-color:rgba(45,156,255,.3);background:rgba(45,156,255,.07)}
+.chip-police:hover{border-color:rgba(45,156,255,.5)}
+.chip-voice{border-color:rgba(0,229,160,.3);background:rgba(0,229,160,.07)}
+.chip-voice:hover{border-color:rgba(0,229,160,.5)}
+
+/* — COUNTDOWN BAR — */
+.countdown-bar{margin:0 18px 0;background:linear-gradient(135deg,#110a02,#1a1002);border:1px solid rgba(255,140,0,.3);border-radius:16px;padding:13px 16px;display:none;align-items:center;gap:12px;margin-bottom:0}
+.countdown-bar.visible{display:flex}
+.cd-ring{width:40px;height:40px;flex-shrink:0}
+.cd-label{font-size:13px;color:var(--text);flex:1;font-weight:500}
+.cd-label strong{color:var(--amber)}
+.cd-cancel{background:none;border:1px solid rgba(255,140,0,.3);border-radius:9px;color:var(--amber);font-size:11px;font-weight:600;padding:5px 11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s}
+.cd-cancel:hover{background:rgba(255,140,0,.1);border-color:var(--amber)}
+
+/* — TABS — */
+.tabs-wrap{padding:14px 18px 0}
+.tabs{display:flex;background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:4px;gap:3px}
+.tab{flex:1;padding:9px 3px;border:none;background:none;color:var(--muted);font-size:11.5px;font-weight:600;border-radius:10px;cursor:pointer;transition:.25s;font-family:'DM Sans',sans-serif;letter-spacing:.3px}
+.tab:hover{color:var(--text)}
+.tab.active{background:linear-gradient(135deg,var(--s4),var(--s5));color:var(--text);border:1px solid var(--border2);box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+
+/* — PANELS — */
+.panel{padding:14px 18px 0;display:none}
+.panel.active{display:block}
+.sec-lbl{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1.8px;margin-bottom:10px}
+
+/* — EMERGENCY GRID — */
+.emer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.ec{background:var(--s2);border:1px solid var(--border);border-radius:15px;padding:15px 8px;text-align:center;cursor:pointer;transition:.25s;position:relative;overflow:hidden}
+.ec::before{content:'';position:absolute;inset:0;opacity:0;transition:.25s;border-radius:15px}
+.ec:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,0.3)}
+.ec:hover::before{opacity:1}
+.ec:active{transform:scale(.95)}
+.ec.lvl-crit{border-color:rgba(255,45,45,.3);background:rgba(255,45,45,.06)}
+.ec.lvl-crit::before{background:rgba(255,45,45,.06)}
+.ec.lvl-crit:hover{border-color:rgba(255,45,45,.6);box-shadow:0 8px 24px rgba(255,45,45,.2)}
+.ec.lvl-med{border-color:rgba(255,140,0,.25);background:rgba(255,140,0,.05)}
+.ec.lvl-med::before{background:rgba(255,140,0,.05)}
+.ec.lvl-med:hover{border-color:rgba(255,140,0,.5);box-shadow:0 8px 24px rgba(255,140,0,.15)}
+.ec.lvl-low{border-color:rgba(45,156,255,.2);background:rgba(45,156,255,.05)}
+.ec.lvl-low::before{background:rgba(45,156,255,.05)}
+.ec.lvl-low:hover{border-color:rgba(45,156,255,.45);box-shadow:0 8px 24px rgba(45,156,255,.12)}
+.ec-ico{font-size:24px;display:block;margin-bottom:7px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))}
+.ec-lbl{font-size:11px;font-weight:600;color:var(--muted);line-height:1.3;letter-spacing:.2px}
+.ec.lvl-crit .ec-lbl{color:#ff9999}
+.ec.lvl-med .ec-lbl{color:#ffc06a}
+.ec.lvl-low .ec-lbl{color:#8ec8ff}
+
+/* PANIC BUTTON (standalone extra large) */
+.panic-strip{margin:0 18px 14px;padding:14px;background:linear-gradient(135deg,rgba(255,45,45,.12),rgba(255,45,45,.06));border:1px solid rgba(255,45,45,.35);border-radius:18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.2s}
+.panic-strip:hover{background:linear-gradient(135deg,rgba(255,45,45,.18),rgba(255,45,45,.1));border-color:rgba(255,45,45,.55);transform:scale(1.01)}
+.panic-strip:active{transform:scale(.99)}
+.panic-ico{font-size:28px;filter:drop-shadow(0 0 6px rgba(255,45,45,.5))}
+.panic-info{flex:1}
+.panic-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#ff7070}
+.panic-desc{font-size:11px;color:var(--muted);margin-top:2px}
+.panic-arrow{font-size:18px;color:rgba(255,45,45,.5)}
+
+/* — SAFETY TIMER — */
+.timer-card{background:var(--s2);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:16px}
+.timer-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.timer-ico-wrap{width:38px;height:38px;border-radius:10px;background:var(--teal-dim);border:1px solid rgba(0,229,160,.2);display:flex;align-items:center;justify-content:center;font-size:18px}
+.timer-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700}
+.timer-desc{font-size:11px;color:var(--muted);margin-top:2px}
+.timer-btns{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+.tbtn{background:var(--s3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:12px;font-weight:600;padding:9px 4px;cursor:pointer;transition:.2s;font-family:'DM Sans',sans-serif}
+.tbtn:hover{background:var(--s4);border-color:var(--border2)}
+.tbtn.active{background:rgba(0,229,160,.12);border-color:rgba(0,229,160,.4);color:var(--teal);box-shadow:0 0 10px rgba(0,229,160,.15)}
+#timer-display{text-align:center;font-family:'Syne',sans-serif;font-size:40px;font-weight:800;color:var(--teal);letter-spacing:4px;display:none;text-shadow:0 0 20px rgba(0,229,160,.4)}
+#timer-cancel-btn{display:none;width:100%;margin-top:8px;padding:9px;background:var(--teal-dim);border:1px solid rgba(0,229,160,.3);border-radius:10px;color:var(--teal);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s}
+#timer-cancel-btn:hover{background:rgba(0,229,160,.15)}
+
+/* — CONTACTS — */
+.contact-form{background:var(--s2);border:1px solid var(--border);border-radius:18px;padding:15px;margin-bottom:14px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.inp{width:100%;padding:10px 13px;background:var(--s3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:.2s}
+.inp:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,229,160,.08)}
+.inp::placeholder{color:var(--dim)}
+.add-btn{width:100%;padding:11px;background:linear-gradient(135deg,var(--s4),var(--s5));border:1px solid rgba(0,229,160,.3);border-radius:10px;color:var(--teal);font-size:13px;font-weight:600;cursor:pointer;transition:.2s;font-family:'DM Sans',sans-serif}
+.add-btn:hover{background:rgba(0,229,160,.12);border-color:rgba(0,229,160,.5);box-shadow:0 0 12px rgba(0,229,160,.15)}
+.add-btn:active{transform:scale(.98)}
+.citem{background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:12px 15px;margin-bottom:8px;display:flex;align-items:center;gap:11px;transition:.2s}
+.citem:hover{border-color:var(--border2);background:var(--s3)}
+.cav{width:38px;height:38px;border-radius:50%;background:var(--red-dim);border:1.5px solid rgba(255,45,45,.3);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:12px;font-weight:800;flex-shrink:0;color:var(--red)}
+.cname{font-size:14px;font-weight:600}
+.cphone{font-size:11px;color:var(--muted);margin-top:1px}
+.cacts{display:flex;gap:5px;margin-left:auto}
+.icoBtn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--s3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;flex-shrink:0}
+.icoBtn:hover{background:var(--s4);border-color:var(--border2)}
+.icoBtn svg{width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:2}
+.icoBtn.del svg{stroke:#ff6b6b}
+.icoBtn.del:hover{background:rgba(255,45,45,.1);border-color:rgba(255,45,45,.3)}
+.no-c{text-align:center;padding:28px;color:var(--muted);font-size:13px;line-height:1.7}
+.edit-inp{width:100%;padding:4px 9px;background:var(--s3);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;margin:2px 0}
+.edit-inp:focus{border-color:var(--teal)}
+.save-btn{background:rgba(0,229,160,.12);border:1px solid rgba(0,229,160,.35);color:var(--teal);border-radius:7px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:4px;transition:.2s}
+.save-btn:hover{background:rgba(0,229,160,.2)}
+
+/* — HELPLINES — */
+.hcard{display:flex;align-items:center;gap:12px;background:var(--s2);border:1px solid var(--border);border-radius:15px;padding:14px 16px;margin-bottom:8px;text-decoration:none;transition:.25s;cursor:pointer}
+.hcard:hover{border-color:var(--border2);background:var(--s3);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.hcard:active{transform:scale(.98)}
+.hico{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.hname{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text)}
+.hdesc{font-size:11px;color:var(--muted);margin-top:2px}
+.hnum{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-left:auto;letter-spacing:.5px}
+
+/* — HISTORY — */
+.hist-item{display:flex;align-items:center;gap:11px;background:var(--s2);border:1px solid var(--border);border-radius:13px;padding:12px 15px;margin-bottom:7px;transition:.2s}
+.hist-item:hover{border-color:var(--border2)}
+.hist-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.hist-dot.crit{background:var(--red);box-shadow:0 0 6px var(--red)}
+.hist-dot.med{background:var(--amber);box-shadow:0 0 6px var(--amber)}
+.hist-dot.low{background:var(--blue);box-shadow:0 0 6px var(--blue)}
+.hist-type{font-size:13px;font-weight:600;flex:1;color:var(--text)}
+.hist-msg{font-size:10px;color:var(--muted);margin-top:1px}
+.hist-time{font-size:10px;color:var(--dim);text-align:right}
+.hist-time span{display:block}
+.clear-hist-btn{width:100%;padding:10px;background:var(--s3);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:.2s;font-family:'DM Sans',sans-serif;margin-top:10px}
+.clear-hist-btn:hover{background:rgba(255,45,45,.08);border-color:rgba(255,45,45,.3);color:#ff9999}
+
+/* — LOCATION PANEL — */
+.map-preview{margin-bottom:14px;background:var(--s2);border:1px solid var(--border);border-radius:18px;padding:16px;overflow:hidden}
+.map-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.map-ico-wrap{width:38px;height:38px;border-radius:10px;background:var(--blue-dim);border:1px solid rgba(45,156,255,.25);display:flex;align-items:center;justify-content:center;font-size:18px}
+.coord-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.coord-chip{background:var(--s3);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.coord-label{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.coord-val{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text)}
+.coord-val.live{color:var(--teal)}
+.loc-action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.loc-action-btn{padding:10px;background:var(--s3);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;transition:.2s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
+.loc-action-btn:hover{background:var(--s4);border-color:var(--border3)}
+.loc-action-btn.share{border-color:rgba(45,156,255,.3);color:var(--blue)}
+.loc-action-btn.share:hover{background:var(--blue-dim);border-color:var(--blue)}
+.loc-action-btn.refresh{border-color:rgba(0,229,160,.3);color:var(--teal)}
+.loc-action-btn.refresh:hover{background:var(--teal-dim);border-color:var(--teal)}
+.acc-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);margin-bottom:10px;padding:5px 10px;background:var(--s3);border-radius:20px;border:1px solid var(--border)}
+.acc-badge span{color:var(--amber);font-weight:600}
+
+/* — TOAST — */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--s4);border:1px solid var(--border2);border-radius:14px;padding:10px 18px;font-size:12px;font-weight:600;z-index:9000;transition:all .35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;opacity:0;backdrop-filter:blur(12px)}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+#toast.danger{border-color:rgba(255,45,45,.4);color:#ff9999;background:rgba(17,6,6,.9)}
+#toast.success{border-color:rgba(0,229,160,.4);color:var(--teal);background:rgba(0,17,12,.9)}
+#toast.warn{border-color:rgba(255,140,0,.4);color:var(--amber);background:rgba(17,10,0,.9)}
+
+/* — SPACER — */
+.spacer{height:12px}
+
+/* — SCROLLBAR — */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--s4);border-radius:2px}
+
+/* — VOICE ACTIVE STATE — */
+.chip-voice.listening{border-color:var(--teal) !important;background:rgba(0,229,160,.15) !important;animation:voicePulse .8s ease-in-out infinite}
+@keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(0,229,160,.4)}50%{box-shadow:0 0 0 8px rgba(0,229,160,0)}}
 </style>
 
-</head>
-
-<body>
-
-<!-- Splash Screen -->
-
+<!-- SPLASH -->
 <div id="splash">
-  <div class="container">
-    <div class="text">Your Safety Companion</div>
-    <img src="icon.png" class="splash-icon">
+  <div class="sp-pulse-ring"><div class="sp-inner-icon">🆘</div></div>
+  <div class="sp-logo-text">RapidSOS</div>
+  <div class="sp-sub">Emergency Response System</div>
+  <div class="sp-bar-wrap"><div class="sp-bar-fill"></div></div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="brand">
+      <div class="live-dot"></div>
+      <span class="brand-text font-syne">RapidSOS</span>
+    </div>
+    <div class="loc-pill" onclick="retryLocation()" title="Tap to refresh location">
+      <div class="loc-dot"></div>
+      <span class="loc-txt" id="loc-txt">Locating…</span>
+    </div>
   </div>
+
+  <!-- STATUS CHIPS -->
+  <div class="status-bar">
+    <div class="stat-chip">
+      <div class="stat-val ok" id="stat-gps">—</div>
+      <div class="stat-lbl">GPS</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-val" id="stat-contacts">0</div>
+      <div class="stat-lbl">Contacts</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-val ok" id="stat-sys">Ready</div>
+      <div class="stat-lbl">System</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-val" id="stat-acc">—</div>
+      <div class="stat-lbl">Accuracy</div>
+    </div>
+  </div>
+
+  <!-- SOS HERO -->
+  <div class="sos-zone" style="margin-top:14px">
+    <div class="sos-decor1"></div><div class="sos-decor2"></div>
+    <button class="sos-main-btn" onclick="triggerSOS()">🚨 SEND SOS NOW</button>
+    <div class="sos-grid">
+      <div class="sos-chip chip-alert" onclick="sendToAll()">
+        <span class="chip-ico">📨</span><span class="chip-lbl">Alert All</span>
+      </div>
+      <div class="sos-chip chip-police" onclick="callPolice()">
+        <span class="chip-ico">🚓</span><span class="chip-lbl">Call 100</span>
+      </div>
+      <div class="sos-chip chip-voice" id="voice-chip" onclick="startVoice()">
+        <span class="chip-ico">🎤</span><span class="chip-lbl">Voice SOS</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- COUNTDOWN -->
+  <div class="countdown-bar" id="cdBar" style="margin:8px 18px">
+    <svg class="cd-ring" viewBox="0 0 36 36">
+      <circle cx="18" cy="18" r="14" fill="none" stroke="#1c2540" stroke-width="3"/>
+      <circle id="cdCircle" cx="18" cy="18" r="14" fill="none" stroke="#FF8C00" stroke-width="3"
+        stroke-linecap="round" stroke-dasharray="88" stroke-dashoffset="0"
+        transform="rotate(-90 18 18)" style="transition:.9s linear"/>
+    </svg>
+    <div class="cd-label">Auto-calling in <strong id="cdSec">10</strong>s</div>
+    <button class="cd-cancel" onclick="cancelCall()">Cancel</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-wrap">
+    <div class="tabs">
+      <button class="tab active" onclick="tab('emergencies',this)">Emergencies</button>
+      <button class="tab" onclick="tab('contacts',this)">Contacts</button>
+      <button class="tab" onclick="tab('helplines',this)">Helplines</button>
+      <button class="tab" onclick="tab('history',this)">History</button>
+      <button class="tab" onclick="tab('location',this)">Location</button>
+    </div>
+  </div>
+
+  <!-- EMERGENCIES PANEL -->
+  <div class="panel active" id="p-emergencies">
+
+    <div class="panic-strip" onclick="triggerSOS()">
+      <span class="panic-ico">🆘</span>
+      <div class="panic-info">
+        <div class="panic-title">CRITICAL — Panic Button</div>
+        <div class="panic-desc">Instant SOS + auto call in 10 seconds</div>
+      </div>
+      <span class="panic-arrow">›</span>
+    </div>
+
+    <div class="sec-lbl">Select emergency type</div>
+    <div class="emer-grid">
+      <div class="ec lvl-crit" onclick="handleEmergency('HIGH_EMERGENCY')"><span class="ec-ico">🆘</span><div class="ec-lbl">High Emergency</div></div>
+      <div class="ec lvl-crit" onclick="handleEmergency('KIDNAP')"><span class="ec-ico">⛔</span><div class="ec-lbl">Kidnap Risk</div></div>
+      <div class="ec lvl-crit" onclick="handleEmergency('MAJOR_ACCIDENT')"><span class="ec-ico">🚑</span><div class="ec-lbl">Major Accident</div></div>
+      <div class="ec lvl-med" onclick="handleEmergency('CHASING')"><span class="ec-ico">🏃</span><div class="ec-lbl">Being Chased</div></div>
+      <div class="ec lvl-med" onclick="handleEmergency('VEHICLE_BREAKDOWN')"><span class="ec-ico">🚗</span><div class="ec-lbl">Breakdown</div></div>
+      <div class="ec lvl-med" onclick="handleEmergency('ISOLATED_AREA')"><span class="ec-ico">🌍</span><div class="ec-lbl">Isolated Area</div></div>
+      <div class="ec lvl-low" onclick="handleEmergency('MEDICAL')"><span class="ec-ico">💊</span><div class="ec-lbl">Medical Issue</div></div>
+      <div class="ec lvl-low" onclick="handleEmergency('MINOR_ACCIDENT')"><span class="ec-ico">🩹</span><div class="ec-lbl">Minor Accident</div></div>
+      <div class="ec lvl-low" onclick="handleEmergency('UNSAFE_FEELING')"><span class="ec-ico">😟</span><div class="ec-lbl">Feeling Unsafe</div></div>
+    </div>
+
+    <div class="sec-lbl">Safety check-in timer</div>
+    <div class="timer-card">
+      <div class="timer-header">
+        <div class="timer-ico-wrap">⏱️</div>
+        <div>
+          <div class="timer-title font-syne">Safety Timer</div>
+          <div class="timer-desc">Auto-alert if you don't check in on time</div>
+        </div>
+      </div>
+      <div class="timer-btns">
+        <button class="tbtn" onclick="startTimer(5,event)">5 min</button>
+        <button class="tbtn" onclick="startTimer(15,event)">15 min</button>
+        <button class="tbtn" onclick="startTimer(30,event)">30 min</button>
+        <button class="tbtn" onclick="startTimer(60,event)">1 hr</button>
+      </div>
+      <div id="timer-display">00:00</div>
+      <button id="timer-cancel-btn" onclick="cancelTimer()">⏹ Cancel Timer</button>
+    </div>
+  </div>
+
+  <!-- CONTACTS PANEL -->
+  <div class="panel" id="p-contacts">
+    <div class="contact-form">
+      <div class="sec-lbl" style="margin-bottom:8px">Add contact</div>
+      <div class="frow">
+        <input class="inp" id="c-name" placeholder="Full name" autocomplete="name">
+        <input class="inp" id="c-phone" placeholder="Phone number" type="tel" autocomplete="tel">
+      </div>
+      <button class="add-btn" onclick="addContact()">＋ Add Emergency Contact</button>
+    </div>
+    <div class="sec-lbl">Saved contacts</div>
+    <div id="c-list"></div>
+  </div>
+
+  <!-- HELPLINES PANEL -->
+  <div class="panel" id="p-helplines">
+    <div class="sec-lbl">National emergency helplines</div>
+    <a class="hcard" href="tel:112">
+      <div class="hico" style="background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.25)">🆘</div>
+      <div><div class="hname">National Emergency</div><div class="hdesc">All services unified — dial first</div></div>
+      <div class="hnum" style="color:var(--teal)">112</div>
+    </a>
+    <a class="hcard" href="tel:100">
+      <div class="hico" style="background:rgba(45,156,255,.1);border:1px solid rgba(45,156,255,.25)">🚓</div>
+      <div><div class="hname">Police</div><div class="hdesc">Law enforcement & security</div></div>
+      <div class="hnum" style="color:var(--blue)">100</div>
+    </a>
+    <a class="hcard" href="tel:108">
+      <div class="hico" style="background:rgba(255,45,45,.1);border:1px solid rgba(255,45,45,.25)">🚑</div>
+      <div><div class="hname">Ambulance</div><div class="hdesc">Medical emergency</div></div>
+      <div class="hnum" style="color:var(--red)">108</div>
+    </a>
+    <a class="hcard" href="tel:101">
+      <div class="hico" style="background:rgba(255,140,0,.1);border:1px solid rgba(255,140,0,.25)">🔥</div>
+      <div><div class="hname">Fire Brigade</div><div class="hdesc">Fire & rescue</div></div>
+      <div class="hnum" style="color:var(--amber)">101</div>
+    </a>
+    <a class="hcard" href="tel:1091">
+      <div class="hico" style="background:rgba(255,79,154,.1);border:1px solid rgba(255,79,154,.25)">👩</div>
+      <div><div class="hname">Women Helpline</div><div class="hdesc">Women safety & support</div></div>
+      <div class="hnum" style="color:var(--pink)">1091</div>
+    </a>
+    <a class="hcard" href="tel:1098">
+      <div class="hico" style="background:rgba(57,217,138,.1);border:1px solid rgba(57,217,138,.25)">🧒</div>
+      <div><div class="hname">Child Helpline</div><div class="hdesc">Child safety & protection</div></div>
+      <div class="hnum" style="color:var(--green)">1098</div>
+    </a>
+    <a class="hcard" href="tel:181">
+      <div class="hico" style="background:rgba(255,140,0,.1);border:1px solid rgba(255,140,0,.25)">🏥</div>
+      <div><div class="hname">Health Helpline</div><div class="hdesc">Non-emergency medical advice</div></div>
+      <div class="hnum" style="color:var(--amber)">181</div>
+    </a>
+  </div>
+
+  <!-- HISTORY PANEL -->
+  <div class="panel" id="p-history">
+    <div class="sec-lbl">Recent alerts sent</div>
+    <div id="history-list"><div class="no-c">No alerts sent yet.<br>Stay safe out there.</div></div>
+    <button class="clear-hist-btn" onclick="clearHistory()">🗑 Clear History</button>
+  </div>
+
+  <!-- LOCATION PANEL -->
+  <div class="panel" id="p-location">
+    <div class="map-preview">
+      <div class="map-header">
+        <div class="map-ico-wrap">📍</div>
+        <div>
+          <div class="font-syne" style="font-size:14px;font-weight:700">Live Location</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">GPS coordinates & accuracy</div>
+        </div>
+      </div>
+      <div class="acc-badge">Accuracy: <span id="acc-val">—</span></div>
+      <div class="coord-row">
+        <div class="coord-chip">
+          <div class="coord-label">Latitude</div>
+          <div class="coord-val live" id="coord-lat">—</div>
+        </div>
+        <div class="coord-chip">
+          <div class="coord-label">Longitude</div>
+          <div class="coord-val live" id="coord-lon">—</div>
+        </div>
+      </div>
+      <div class="loc-action-row">
+        <a class="loc-action-btn share" id="maps-link" href="#" target="_blank">🗺️ Open in Maps</a>
+        <button class="loc-action-btn refresh" onclick="retryLocation()">🔄 Refresh GPS</button>
+      </div>
+    </div>
+
+    <div class="sec-lbl">Share location</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="loc-action-btn" style="background:var(--s2);border:1px solid var(--border2);padding:12px" onclick="shareLocationSMS()">📱 Share via SMS</button>
+      <button class="loc-action-btn" style="background:var(--s2);border:1px solid var(--border2);padding:12px" onclick="copyLocation()">📋 Copy Coords</button>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
 </div>
 
-<div id="mainApp" style="display:none;">
-
-<div class="phone">
-
-<h2>🚨 RapidSOS</h2>
-
-<p id="location">📍 Detecting location...</p>
-
-<!-- MAIN SOS -->
-
-<button class="sos" onclick="triggerSOS()">
-🚨 SOS
-</button>
-
-<button class="sos" onclick="sendToAll()">
-📨 Alert All
-</button>
-
-<button class="sos" onclick="callPolice()">
-📞 Call Police
-</button>
-
-<button class="sos" onclick="startVoice()">
-🎤 Voice SOS
-</button>
-
-<!-- 🚨 Emergency Types Grid -->
-
-<div class="card">
-
-<h3>🚨 Emergency Types</h3>
-
-<div class="emergency-grid">
-
-<button onclick="handleEmergency('HIGH_EMERGENCY')">
-🚨 High Emergency
-</button>
-
-<button onclick="handleEmergency('CHASING')">
-🏃 Chasing
-</button>
-
-<button onclick="handleEmergency('KIDNAP')">
-⚠️ Kidnap
-</button>
-
-<button onclick="handleEmergency('MINOR_ACCIDENT')">
-🚑 Minor Accident
-</button>
-
-<button onclick="handleEmergency('MAJOR_ACCIDENT')">
-🚑 Major Accident
-</button>
-
-<button onclick="handleEmergency('UNSAFE_FEELING')">
-😟 Unsafe Feeling
-</button>
-
-<button onclick="handleEmergency('VEHICLE_BREAKDOWN')">
-🚗 Breakdown
-</button>
-
-<button onclick="handleEmergency('ISOLATED_AREA')">
-🌍 Isolated Area
-</button>
-
-</div>
-
-</div>
-
-<!-- Emergency Numbers -->
-
-<div class="card">
-
-<h3>🚨 Emergency Numbers</h3>
-
-<button onclick="window.location.href='tel:100'">
-🚓 Call Police (100)
-</button>
-
-<button onclick="window.location.href='tel:108'">
-🚑 Call Ambulance (108)
-</button>
-
-<button onclick="window.location.href='tel:101'">
-🔥 Call Fire (101)
-</button>
-
-</div>
-
-<!-- Add Contact -->
-
-<div class="card">
-
-<input type="text"
-id="name"
-placeholder="Name">
-
-<input type="text"
-id="phone"
-placeholder="Phone">
-
-<button onclick="addContact()">
-➕ Add Contact
-</button>
-
-</div>
-
-<button onclick="viewContacts()">
-📞 View Contacts
-</button>
-
-<div id="output"></div>
-
-</div>
-
-</div>
+<div id="toast"></div>
 
 <script>
-
-/* Emergency Map */
-
-const EmergencyMap = {
-
-HIGH_EMERGENCY:
-{ level: 10, msg: "I am in serious danger. Help immediately." },
-
-KIDNAP:
-{ level: 10, msg: "I am at risk of being kidnapped." },
-
-MAJOR_ACCIDENT:
-{ level: 8, msg: "I was involved in a major accident." },
-
-CHASING:
-{ level: 6, msg: "Someone is following me." },
-
-VEHICLE_BREAKDOWN:
-{ level: 6, msg: "My vehicle broke down." },
-
-ISOLATED_AREA:
-{ level: 6, msg: "I am stuck in an isolated area." },
-
-MINOR_ACCIDENT:
-{ level: 3, msg: "I had a minor accident." },
-
-UNSAFE_FEELING:
-{ level: 2, msg: "I feel unsafe." }
-
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const EM = {
+  HIGH_EMERGENCY: {level:10, msg:"🚨 I am in SERIOUS DANGER. Please help immediately!"},
+  KIDNAP:         {level:10, msg:"🚨 I am at risk of being kidnapped. Track my location!"},
+  MAJOR_ACCIDENT: {level:8,  msg:"🚑 I was involved in a major accident. Send help!"},
+  CHASING:        {level:6,  msg:"🏃 Someone is following/chasing me. I need help."},
+  VEHICLE_BREAKDOWN:{level:6,msg:"🚗 My vehicle broke down. I am stranded."},
+  ISOLATED_AREA:  {level:6,  msg:"🌍 I am stuck in an isolated area. Please come."},
+  MEDICAL:        {level:5,  msg:"💊 I have a medical issue and need assistance."},
+  MINOR_ACCIDENT: {level:3,  msg:"🩹 I had a minor accident. Please check on me."},
+  UNSAFE_FEELING: {level:2,  msg:"😟 I feel unsafe. Please check in with me."}
 };
 
-/* Contacts */
+let contacts = JSON.parse(localStorage.getItem("rsos3_contacts") || "[]");
+let alertHistory = JSON.parse(localStorage.getItem("rsos3_history") || "[]");
+let callTimer = null, safetyTimer = null, safetyRemaining = 0;
+window.lat = null; window.lon = null; window.locAccuracy = null;
 
-let contacts =
-JSON.parse(localStorage.getItem("contacts")) || [];
-
-/* LOCATION */
-
-function getLocation() {
-
-navigator.geolocation.getCurrentPosition(
-
-(pos) => {
-
-window.lat = pos.coords.latitude;
-window.lon = pos.coords.longitude;
-
-document.getElementById("location").innerHTML =
-"📍 Location detected";
-
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+function toast(msg, type="", dur=3200) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "show " + (type || "");
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.className = "", dur);
 }
 
-);
+// ─── LOCATION ────────────────────────────────────────────────────────────────
+function initLocation() {
+  if (!navigator.geolocation) {
+    setLocUI("GPS unavailable", false);
+    return;
+  }
+  document.getElementById("loc-txt").textContent = "Locating…";
+  document.getElementById("loc-txt").className = "loc-txt";
+  document.getElementById("stat-gps").textContent = "…";
+  document.getElementById("stat-gps").className = "stat-val";
 
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      window.lat = pos.coords.latitude;
+      window.lon = pos.coords.longitude;
+      window.locAccuracy = Math.round(pos.coords.accuracy);
+
+      const latStr = lat.toFixed(5);
+      const lonStr = lon.toFixed(5);
+
+      document.getElementById("loc-txt").textContent = `${latStr}, ${lonStr}`;
+      document.getElementById("loc-txt").className = "loc-txt active";
+      document.getElementById("stat-gps").textContent = "Active";
+      document.getElementById("stat-gps").className = "stat-val ok";
+      document.getElementById("stat-acc").textContent = `±${locAccuracy}m`;
+      document.getElementById("stat-acc").className = "stat-val ok";
+
+      // Location panel
+      document.getElementById("coord-lat").textContent = latStr;
+      document.getElementById("coord-lon").textContent = lonStr;
+      document.getElementById("acc-val").textContent = `±${locAccuracy} metres`;
+      document.getElementById("maps-link").href = `https://maps.google.com/?q=${lat},${lon}`;
+
+      toast(`📍 GPS locked — ±${locAccuracy}m accuracy`, "success");
+    },
+    err => {
+      const msgs = {1:"Permission denied", 2:"Position unavailable", 3:"Timeout"};
+      const m = msgs[err.code] || "GPS error";
+      setLocUI(m, true);
+      toast(`⚠️ Location: ${m}`, "danger");
+    },
+    {enableHighAccuracy: true, timeout: 14000, maximumAge: 20000}
+  );
 }
 
-getLocation();
+function retryLocation() {
+  document.getElementById("stat-acc").textContent = "…";
+  initLocation();
+}
 
-/* ADD CONTACT */
+function setLocUI(text, fail) {
+  document.getElementById("loc-txt").textContent = text;
+  document.getElementById("stat-gps").textContent = fail ? "Failed" : "No GPS";
+  document.getElementById("stat-gps").className = "stat-val " + (fail ? "fail" : "warn");
+}
+
+function getMapLink() {
+  return (window.lat && window.lon)
+    ? `https://maps.google.com/?q=${window.lat.toFixed(6)},${window.lon.toFixed(6)}`
+    : "Location unavailable";
+}
+
+function buildSMS(msg) {
+  return encodeURIComponent(`🚨 SOS ALERT — RapidSOS\n\n${msg}\n\n📍 Location: ${getMapLink()}\n\nSent via RapidSOS Emergency App`);
+}
+
+function shareLocationSMS() {
+  const nums = contacts.map(c => c.phone);
+  if (!nums.length) { toast("⚠️ Add contacts first", "danger"); return; }
+  if (!window.lat) { toast("⚠️ No GPS location yet", "warn"); return; }
+  window.location.href = `sms:${nums.join(",")}?body=${encodeURIComponent(`📍 My current location:\n${getMapLink()}\n\nLat: ${window.lat.toFixed(6)}, Lon: ${window.lon.toFixed(6)}\n— Sent via RapidSOS`)}`;
+  toast("📍 Location shared", "success");
+}
+
+function copyLocation() {
+  if (!window.lat) { toast("⚠️ No GPS location yet", "warn"); return; }
+  const text = `${window.lat.toFixed(6)}, ${window.lon.toFixed(6)}`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => toast("📋 Coords copied!", "success"));
+  } else {
+    toast(`📍 ${text}`, "", 5000);
+  }
+}
+
+// ─── TABS ────────────────────────────────────────────────────────────────────
+function tab(id, el) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById("p-" + id).classList.add("active");
+  if (id === "contacts") renderContacts();
+  if (id === "history") renderHistory();
+}
+
+// ─── CONTACTS ─────────────────────────────────────────────────────────────────
+function saveContacts() {
+  localStorage.setItem("rsos3_contacts", JSON.stringify(contacts));
+  document.getElementById("stat-contacts").textContent = contacts.length;
+}
+
+function initials(name) {
+  return name.split(" ").map(w => w[0] || "").join("").slice(0, 2).toUpperCase();
+}
 
 function addContact() {
-
-let name =
-document.getElementById("name").value.trim();
-
-let phone =
-document.getElementById("phone").value.trim();
-
-if (!name || !phone) {
-output("⚠️ Enter details!");
-return;
+  const n = document.getElementById("c-name").value.trim();
+  const p = document.getElementById("c-phone").value.trim();
+  if (!n || !p) { toast("⚠️ Enter both name and phone", "danger"); return; }
+  if (!/^\+?[\d\s\-\(\)]{7,16}$/.test(p)) { toast("⚠️ Enter a valid phone number", "danger"); return; }
+  contacts.push({name: n, phone: p});
+  saveContacts();
+  document.getElementById("c-name").value = "";
+  document.getElementById("c-phone").value = "";
+  renderContacts();
+  toast(`✅ ${n} added as emergency contact`, "success");
 }
 
-contacts.push({ name, phone });
-
-localStorage.setItem(
-"contacts",
-JSON.stringify(contacts)
-);
-
-output("✅ Contact Saved!");
-
+function renderContacts() {
+  const el = document.getElementById("c-list");
+  document.getElementById("stat-contacts").textContent = contacts.length;
+  if (!contacts.length) {
+    el.innerHTML = '<div class="no-c">No contacts yet.<br>Add someone who can help in an emergency.</div>';
+    return;
+  }
+  el.innerHTML = contacts.map((c, i) => `
+    <div class="citem" id="ci-${i}">
+      <div class="cav">${initials(c.name)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="cname">${c.name}</div>
+        <div class="cphone">${c.phone}</div>
+      </div>
+      <div class="cacts">
+        <a class="icoBtn" href="tel:${c.phone}" title="Call">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.39 2 2 0 0 1 3.59 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </a>
+        <div class="icoBtn" onclick="startEdit(${i})" title="Edit">
+          <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <div class="icoBtn del" onclick="delContact(${i})" title="Delete">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        </div>
+      </div>
+    </div>`).join("");
 }
 
-/* VIEW CONTACTS */
-
-function viewContacts() {
-
-if (contacts.length === 0) {
-output("No contacts saved");
-return;
+function startEdit(i) {
+  const row = document.getElementById(`ci-${i}`);
+  const info = row.querySelector("div:nth-child(2)");
+  info.innerHTML = `<input class="edit-inp" id="en-${i}" value="${contacts[i].name}"><input class="edit-inp" id="ep-${i}" value="${contacts[i].phone}" type="tel"><button class="save-btn" onclick="saveEdit(${i})">✓ Save</button>`;
 }
 
-let list = "📞 Contacts:<br>";
-
-contacts.forEach((c, index) => {
-
-list += `
-<div class="contact-card">
-
-👤 ${c.name} - ${c.phone}
-
-<div class="action-buttons">
-
-<button onclick="editContact(${index})">
-✏️ Edit
-</button>
-
-<button onclick="deleteContact(${index})">
-❌ Delete
-</button>
-
-</div>
-
-</div>
-`;
-
-});
-
-output(list);
-
+function saveEdit(i) {
+  const n = document.getElementById(`en-${i}`).value.trim();
+  const p = document.getElementById(`ep-${i}`).value.trim();
+  if (!n || !p) { toast("⚠️ Fields can't be empty", "danger"); return; }
+  contacts[i] = {name: n, phone: p};
+  saveContacts(); renderContacts();
+  toast("✅ Contact updated", "success");
 }
 
-function deleteContact(index) {
-
-contacts.splice(index, 1);
-
-localStorage.setItem(
-"contacts",
-JSON.stringify(contacts)
-);
-
-viewContacts();
-
+function delContact(i) {
+  const name = contacts[i].name;
+  contacts.splice(i, 1);
+  saveContacts(); renderContacts();
+  toast(`🗑 ${name} removed`, "warn");
 }
 
-function editContact(index) {
+// ─── SOS ACTIONS ─────────────────────────────────────────────────────────────
+function getNums() { return contacts.map(c => c.phone); }
 
-let newName =
-prompt("Edit Name:", contacts[index].name);
-
-let newPhone =
-prompt("Edit Phone:", contacts[index].phone);
-
-if (newName && newPhone) {
-
-contacts[index] =
-{ name: newName, phone: newPhone };
-
-localStorage.setItem(
-"contacts",
-JSON.stringify(contacts)
-);
-
-viewContacts();
-
+function triggerSOS() {
+  const nums = getNums();
+  if (!nums.length) { toast("⚠️ Add emergency contacts first!", "danger"); return; }
+  window.location.href = `sms:${nums.join(",")}?body=${buildSMS("🚨 EMERGENCY — I need IMMEDIATE help!")}`;
+  addToHistory("HIGH_EMERGENCY", "Main SOS triggered");
+  startCountdown(nums);
+  toast("🚨 SOS sent to all contacts!", "danger", 4000);
 }
 
+function sendToAll() {
+  const nums = getNums();
+  if (!nums.length) { toast("⚠️ No contacts saved", "danger"); return; }
+  window.location.href = `sms:${nums.join(",")}?body=${buildSMS("⚠️ ALERT: I need assistance immediately!")}`;
+  addToHistory("HIGH_EMERGENCY", "Alert All triggered");
+  toast("📨 Alert sent to all contacts", "success");
 }
 
-/* 🚨 MAIN EMERGENCY */
+function callPolice() {
+  window.location.href = "tel:100";
+  toast("📞 Calling Police (100)…");
+}
+
+function startVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast("🎤 Voice not supported on this device", "danger"); return; }
+  const chip = document.getElementById("voice-chip");
+  const r = new SR();
+  r.onstart = () => { chip.classList.add("listening"); toast("🎤 Listening — speak now…"); };
+  r.onresult = e => {
+    const tx = e.results[0][0].transcript;
+    const nums = getNums();
+    if (nums.length) {
+      window.location.href = `sms:${nums.join(",")}?body=${buildSMS("🎤 Voice SOS: " + tx)}`;
+      addToHistory("HIGH_EMERGENCY", "Voice: " + tx);
+      toast("🎤 Voice SOS sent!", "success");
+    } else {
+      toast("⚠️ Add contacts to send voice SOS", "danger");
+    }
+    chip.classList.remove("listening");
+  };
+  r.onerror = () => { chip.classList.remove("listening"); toast("🎤 Voice capture failed", "danger"); };
+  r.onend = () => chip.classList.remove("listening");
+  r.start();
+}
 
 function handleEmergency(type) {
-
-let data = EmergencyMap[type];
-
-let level = data.level;
-
-let message = data.msg;
-
-let mapLink =
-window.lat ?
-`https://www.google.com/maps?q=${lat},${lon}`
-: "";
-
-let numbers =
-contacts.map(c => c.phone);
-
-let fullMessage =
-
-`🚨 SOS ALERT 🚨
-
-${message}
-
-📍 Location:
-${mapLink}`;
-
-window.location.href =
-`sms:${numbers.join(",")}?body=${encodeURIComponent(fullMessage)}`;
-
-if (level >= 7) {
-startCalling(numbers, level);
+  const d = EM[type];
+  const nums = getNums();
+  if (!nums.length) { toast("⚠️ Add emergency contacts first", "danger"); return; }
+  window.location.href = `sms:${nums.join(",")}?body=${buildSMS(d.msg)}`;
+  addToHistory(type, d.msg);
+  toast("🚨 Emergency alert sent", "danger");
+  if (d.level >= 7) startCountdown(nums);
 }
 
+// ─── COUNTDOWN ───────────────────────────────────────────────────────────────
+function startCountdown(nums) {
+  const bar = document.getElementById("cdBar");
+  const sec = document.getElementById("cdSec");
+  const circle = document.getElementById("cdCircle");
+  bar.classList.add("visible");
+  let t = 10; sec.textContent = t;
+  clearInterval(callTimer);
+  callTimer = setInterval(() => {
+    t--;
+    sec.textContent = t;
+    circle.style.strokeDashoffset = 88 * (1 - t / 10);
+    if (t <= 0) {
+      clearInterval(callTimer);
+      bar.classList.remove("visible");
+      circle.style.strokeDashoffset = 0;
+      if (nums.length) window.location.href = `tel:${nums[0]}`;
+    }
+  }, 1000);
 }
 
-/* CALL SYSTEM */
+function cancelCall() {
+  clearInterval(callTimer);
+  document.getElementById("cdBar").classList.remove("visible");
+  document.getElementById("cdCircle").style.strokeDashoffset = 0;
+  toast("✅ Auto-call cancelled");
+}
 
-function startCalling(numbers, level) {
+// ─── SAFETY TIMER ─────────────────────────────────────────────────────────────
+function startTimer(mins, ev) {
+  clearInterval(safetyTimer);
+  document.querySelectorAll(".tbtn").forEach(b => b.classList.remove("active"));
+  if (ev && ev.target) ev.target.classList.add("active");
+  safetyRemaining = mins * 60;
+  const disp = document.getElementById("timer-display");
+  const cancelBtn = document.getElementById("timer-cancel-btn");
+  disp.style.display = "block";
+  cancelBtn.style.display = "block";
 
-let repeat =
-(level >= 10) ? 3 : 1;
+  function tick() {
+    const m = Math.floor(safetyRemaining / 60);
+    const s = safetyRemaining % 60;
+    disp.textContent = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    if (safetyRemaining <= 0) {
+      clearInterval(safetyTimer);
+      disp.style.display = "none";
+      cancelBtn.style.display = "none";
+      document.querySelectorAll(".tbtn").forEach(b => b.classList.remove("active"));
+      const nums = getNums();
+      if (nums.length) {
+        window.location.href = `sms:${nums.join(",")}?body=${buildSMS("⏰ Safety timer expired — please check on me!")}`;
+        addToHistory("UNSAFE_FEELING", "Safety timer expired");
+      }
+      toast("⏰ Safety timer expired — alert sent!", "danger", 5000);
+      return;
+    }
+    if (safetyRemaining === 60) toast("⏱️ 1 minute left on safety timer", "warn");
+    safetyRemaining--;
+  }
+  tick();
+  safetyTimer = setInterval(tick, 1000);
+  toast(`⏱️ Safety timer: ${mins} min`, "success");
+}
 
-let delay = 0;
+function cancelTimer() {
+  clearInterval(safetyTimer);
+  document.getElementById("timer-display").style.display = "none";
+  document.getElementById("timer-cancel-btn").style.display = "none";
+  document.querySelectorAll(".tbtn").forEach(b => b.classList.remove("active"));
+  toast("⏹ Safety timer cancelled");
+}
 
-for (let r = 0; r < repeat; r++) {
+// ─── HISTORY ─────────────────────────────────────────────────────────────────
+function saveHistory() { localStorage.setItem("rsos3_history", JSON.stringify(alertHistory)); }
 
-numbers.forEach(num => {
+function addToHistory(type, msg) {
+  const lvl = EM[type] ? EM[type].level : 10;
+  const tier = lvl >= 7 ? "crit" : lvl >= 4 ? "med" : "low";
+  alertHistory.unshift({
+    type, msg, tier,
+    time: new Date().toLocaleTimeString(),
+    date: new Date().toLocaleDateString()
+  });
+  if (alertHistory.length > 30) alertHistory.pop();
+  saveHistory(); renderHistory();
+}
+
+function renderHistory() {
+  const el = document.getElementById("history-list");
+  if (!alertHistory.length) { el.innerHTML = '<div class="no-c">No alerts sent yet.<br>Stay safe out there.</div>'; return; }
+  el.innerHTML = alertHistory.map(h => `
+    <div class="hist-item">
+      <div class="hist-dot ${h.tier}"></div>
+      <div style="flex:1;min-width:0">
+        <div class="hist-type">${h.type.replace(/_/g, " ")}</div>
+        <div class="hist-msg">${h.msg.replace(/[🚨⚠️🚑🚗🌍🩹😟🏃💊🎤⏰]/g,"").trim().slice(0,55)}…</div>
+      </div>
+      <div class="hist-time"><span>${h.time}</span><span>${h.date}</span></div>
+    </div>`).join("");
+}
+
+function clearHistory() {
+  alertHistory = [];
+  saveHistory(); renderHistory();
+  toast("🗑 History cleared");
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderContacts();
+renderHistory();
 
 setTimeout(() => {
-
-window.location.href =
-`tel:${num}`;
-
-}, delay);
-
-delay += 15000;
-
-});
-
-}
-
-}
-
-/* OUTPUT */
-
-function output(msg) {
-
-document.getElementById("output").innerHTML = msg;
-
-}
-
-/* Splash */
-
-setTimeout(() => {
-
-document.getElementById("splash").style.opacity = "0";
-
-setTimeout(() => {
-
-document.getElementById("splash").style.display = "none";
-
-document.getElementById("mainApp").style.display = "block";
-
-}, 500);
-
-}, 2000);
-
+  const sp = document.getElementById("splash");
+  sp.style.opacity = "0";
+  setTimeout(() => {
+    sp.style.display = "none";
+    document.getElementById("app").style.display = "block";
+    initLocation();
+    renderContacts();
+  }, 700);
+}, 2600);
 </script>
-
-</body>
 </html>

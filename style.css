@@ -1,354 +1,52 @@
-/* 🌍 Overall Page */
-/* Reset */
+/* ===================================
+   RAPIDSOS — EXTRA GLOBAL STYLES
+   =================================== */
 
-* {
-    box-sizing: border-box;
-}
-
-/* Body */
-
-body {
+/* Prevent unwanted scroll bounce */
+html, body {
     margin: 0;
     padding: 0;
-    width: 100%;
     overflow-x: hidden;
-    font-family: 'Segoe UI', sans-serif;
-
-    /* App background */
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
 }
 
-/* 📱 Phone Container */
-
-.phone {
-    width: 100%;
-    max-width: 400px;
-    margin: auto;
-
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(15px);
-
-    border-radius: 20px;
-    padding: 20px;
-
-    color: white;
-
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+/* Improve tap behavior on mobile */
+button,
+.sos-main-btn,
+.sos-chip,
+.ec,
+.icoBtn,
+.loc-action-btn,
+.tbtn {
+    touch-action: manipulation;
 }
 
-/* 🔥 Title */
-
-h2 {
-    text-align: center;
-    margin-bottom: 12px;
-
-    font-size: 36px;
-    font-weight: bold;
-
-    letter-spacing: 1.5px;
-
-    color: #ffffff;
-
-    text-shadow: 0 0 10px rgba(255,75,43,0.7);
+/* Make sure images scale properly */
+img {
+    max-width: 100%;
+    height: auto;
 }
 
-/* 📍 Location */
-
-#location {
-    text-align: center;
-    font-size: 14px;
-    margin-bottom: 15px;
+/* Optional smoother fonts */
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* 🚨 Buttons */
+/* Improve safe mobile spacing */
+@media (max-width: 420px) {
 
-button {
-    width: 100%;
-
-    padding: 12px;
-    margin: 8px 0;
-
-    border: none;
-    border-radius: 12px;
-
-    font-size: 16px;
-
-    cursor: pointer;
-
-    transition: 0.3s;
-}
-
-/* 🚨 SOS Buttons */
-
-.sos {
-    background: linear-gradient(45deg, #ff416c, #ff4b2b);
-    color: white;
-    font-weight: bold;
-
-    animation: pulse 1.5s infinite;
-}
-
-/* Hover */
-
-button:hover {
-    transform: scale(1.05);
-    opacity: 0.9;
-}
-
-/* 🧊 Cards */
-
-.card {
-    background: rgba(255, 255, 255, 0.15);
-
-    padding: 15px;
-
-    border-radius: 15px;
-
-    margin: 12px 0;
-}
-
-/* ✏️ Inputs */
-
-input {
-    width: 100%;
-
-    padding: 12px;
-    margin: 6px 0;
-
-    border-radius: 12px;
-
-    border: none;
-
-    outline: none;
-}
-
-/* 📞 Links */
-
-a {
-    color: #00ffd5;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-/* 📤 Output */
-
-#output {
-    margin-top: 10px;
-
-    padding: 10px;
-
-    border-radius: 10px;
-
-    background: rgba(0,0,0,0.3);
-
-    font-size: 14px;
-}
-
-/* ✨ SOS Glow Animation */
-
-@keyframes pulse {
-
-    0% {
-        box-shadow: 0 0 5px #ff4b2b;
-    }
-
-    50% {
-        box-shadow: 0 0 20px #ff4b2b;
-    }
-
-    100% {
-        box-shadow: 0 0 5px #ff4b2b;
+    #app {
+        padding-bottom: 60px;
     }
 
 }
 
-/* ========================= */
-/* 🌟 SPLASH SCREEN */
-/* ========================= */
-
-#splash {
-
-    position: fixed;
-
-    width: 100%;
-    height: 100vh;
-
-    background: linear-gradient(
-        to bottom,
-        #2c3e50,
-        #3a4a5a
-    );
-
-    display: flex;
-
-    justify-content: center;
-    align-items: center;
-
-    z-index: 9999;
-
-    transition: opacity 0.5s;
-
+/* Optional: dark scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
 }
 
-/* Center splash content */
-
-.container {
-    text-align: center;
-}
-
-/* Splash Text */
-
-.text {
-
-    font-size: 26px;
-
-    font-weight: 600;
-
-    color: white;
-
-    margin-bottom: 20px;
-
-    opacity: 0;
-
-    transform: scale(0.8);
-
-    animation: textPop 0.6s ease-out forwards;
-
-}
-
-/* ⭐ Splash Icon (Badge Style ONLY) */
-
-.splash-icon {
-
-    width: 140px;
-
-    display: block;
-
-    margin: 0 auto;
-
-    /* Badge look */
-
-    padding: 12px;
-
-    border-radius: 25px;
-
-    /* Background matches splash */
-
-    background: linear-gradient(
-        to bottom,
-        #2c3e50,
-        #3a4a5a
-    );
-
-    /* Soft glow */
-
-    box-shadow: 0 0 20px rgba(255,255,255,0.2);
-
-    opacity: 0;
-
-    transform: scale(0.8);
-
-    animation: logoPop 0.6s ease-out forwards;
-
-    animation-delay: 0.6s;
-
-}
-
-/* Normal App Icon (unchanged) */
-
-.app-icon {
-
-    width: 120px;
-
-}
-
-/* Splash Animations */
-
-@keyframes textPop {
-
-    0% {
-        opacity: 0;
-        transform: scale(0.7);
-    }
-
-    60% {
-        opacity: 1;
-        transform: scale(1.1);
-    }
-
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-
-}
-
-@keyframes logoPop {
-
-    0% {
-        opacity: 0;
-        transform: scale(0.7);
-    }
-
-    60% {
-        opacity: 1;
-        transform: scale(1.1);
-    }
-
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-
-}
-
-/* Contact Card */
-
-.contact-card {
-  margin-bottom: 12px;
-  padding: 10px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.1);
-}
-
-/* Side-by-side buttons */
-
-.action-buttons {
-  display: flex;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-/* Make buttons share space */
-
-.action-buttons button {
-  flex: 1;
-}
-
-/* 🚨 Emergency Grid Layout */
-
-.emergency-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  justify-items: center;
-}
-
-/* Make buttons fit nicely */
-
-.emergency-grid button {
-  width: 100%;
-  padding: 10px;
-  font-size: 14px;
-  border-radius: 12px;
-}
-
-/* Center last row if fewer buttons */
-
-.emergency-grid button:nth-last-child(2):nth-child(3n+1) {
-  grid-column: 2;
-}
-
-.emergency-grid button:last-child:nth-child(3n+1) {
-  grid-column: 2;
+::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
 }
