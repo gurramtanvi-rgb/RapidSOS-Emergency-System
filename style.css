@@ -324,3 +324,31 @@ a {
 .action-buttons button {
   flex: 1;
 }
+
+/* 🚨 Emergency Grid Layout */
+
+.emergency-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  justify-items: center;
+}
+
+/* Make buttons fit nicely */
+
+.emergency-grid button {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+
+/* Center last row if fewer buttons */
+
+.emergency-grid button:nth-last-child(2):nth-child(3n+1) {
+  grid-column: 2;
+}
+
+.emergency-grid button:last-child:nth-child(3n+1) {
+  grid-column: 2;
+}

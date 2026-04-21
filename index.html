@@ -8,191 +8,253 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<style>
+
+/* 🚨 Emergency Grid Layout */
+
+.emergency-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  justify-items: center;
+}
+
+.emergency-grid button {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+
+/* Center last row */
+
+.emergency-grid button:nth-last-child(2):nth-child(3n+1) {
+  grid-column: 2;
+}
+
+.emergency-grid button:last-child:nth-child(3n+1) {
+  grid-column: 2;
+}
+
+</style>
+
 </head>
 
 <body>
 
-  <div id="splash">
+<!-- Splash Screen -->
+
+<div id="splash">
   <div class="container">
     <div class="text">Your Safety Companion</div>
     <img src="icon.png" class="splash-icon">
   </div>
-</div>  
+</div>
 
 <div id="mainApp" style="display:none;">
+
 <div class="phone">
 
 <h2>🚨 RapidSOS</h2>
 
 <p id="location">📍 Detecting location...</p>
 
-<!-- 🚨 SOS BUTTON -->
-<button class="sos" onclick="triggerSOS()">🚨 SOS</button>
+<!-- MAIN SOS -->
 
-<button class="sos" onclick="sendToAll()">📨 Alert All</button>
+<button class="sos" onclick="triggerSOS()">
+🚨 SOS
+</button>
 
-<button class="sos" onclick="callPolice()">📞 Call Police</button>
+<button class="sos" onclick="sendToAll()">
+📨 Alert All
+</button>
 
-<button class="sos" onclick="startVoice()">🎤 Voice SOS</button>
+<button class="sos" onclick="callPolice()">
+📞 Call Police
+</button>
 
-<!-- 🚨 DEFAULT EMERGENCY NUMBERS -->
+<button class="sos" onclick="startVoice()">
+🎤 Voice SOS
+</button>
+
+<!-- 🚨 Emergency Types Grid -->
+
+<div class="card">
+
+<h3>🚨 Emergency Types</h3>
+
+<div class="emergency-grid">
+
+<button onclick="handleEmergency('HIGH_EMERGENCY')">
+🚨 High Emergency
+</button>
+
+<button onclick="handleEmergency('CHASING')">
+🏃 Chasing
+</button>
+
+<button onclick="handleEmergency('KIDNAP')">
+⚠️ Kidnap
+</button>
+
+<button onclick="handleEmergency('MINOR_ACCIDENT')">
+🚑 Minor Accident
+</button>
+
+<button onclick="handleEmergency('MAJOR_ACCIDENT')">
+🚑 Major Accident
+</button>
+
+<button onclick="handleEmergency('UNSAFE_FEELING')">
+😟 Unsafe Feeling
+</button>
+
+<button onclick="handleEmergency('VEHICLE_BREAKDOWN')">
+🚗 Breakdown
+</button>
+
+<button onclick="handleEmergency('ISOLATED_AREA')">
+🌍 Isolated Area
+</button>
+
+</div>
+
+</div>
+
+<!-- Emergency Numbers -->
 
 <div class="card">
 
 <h3>🚨 Emergency Numbers</h3>
 
-
-<button class="sos" onclick="window.location.href='tel:100'">
+<button onclick="window.location.href='tel:100'">
 🚓 Call Police (100)
 </button>
 
-<button class="sos" onclick="window.location.href='tel:108'">
+<button onclick="window.location.href='tel:108'">
 🚑 Call Ambulance (108)
 </button>
 
-<button class="sos" onclick="window.location.href='tel:101'">
+<button onclick="window.location.href='tel:101'">
 🔥 Call Fire (101)
 </button>
 
 </div>
 
-<!-- ➕ ADD CONTACT -->
+<!-- Add Contact -->
 
 <div class="card">
 
-<input type="text" id="name" placeholder="Name">
+<input type="text"
+id="name"
+placeholder="Name">
 
-<input type="text" id="phone" placeholder="Phone">
+<input type="text"
+id="phone"
+placeholder="Phone">
 
-<button onclick="addContact()">➕ Add Contact</button>
-
-</div>
-
-<button onclick="viewContacts()">📞 View Contacts</button>
-
-<!-- 🛣️ ROUTE -->
-
-<div class="card">
-
-<input type="text" id="route" placeholder="Blocked Route">
-
-<button onclick="findRoute()">🛣️ Find Route</button>
+<button onclick="addContact()">
+➕ Add Contact
+</button>
 
 </div>
+
+<button onclick="viewContacts()">
+📞 View Contacts
+</button>
 
 <div id="output"></div>
 
 </div>
+
 </div>
 
 <script>
 
-// Default Contacts
+/* Emergency Map */
 
-// Load saved contacts OR start empty
-let contacts = JSON.parse(localStorage.getItem("contacts")) || [];
+const EmergencyMap = {
 
+HIGH_EMERGENCY:
+{ level: 10, msg: "I am in serious danger. Help immediately." },
 
+KIDNAP:
+{ level: 10, msg: "I am at risk of being kidnapped." },
 
-// 🌍 GET LOCATION
+MAJOR_ACCIDENT:
+{ level: 8, msg: "I was involved in a major accident." },
+
+CHASING:
+{ level: 6, msg: "Someone is following me." },
+
+VEHICLE_BREAKDOWN:
+{ level: 6, msg: "My vehicle broke down." },
+
+ISOLATED_AREA:
+{ level: 6, msg: "I am stuck in an isolated area." },
+
+MINOR_ACCIDENT:
+{ level: 3, msg: "I had a minor accident." },
+
+UNSAFE_FEELING:
+{ level: 2, msg: "I feel unsafe." }
+
+};
+
+/* Contacts */
+
+let contacts =
+JSON.parse(localStorage.getItem("contacts")) || [];
+
+/* LOCATION */
 
 function getLocation() {
 
-if (navigator.geolocation) {
-
 navigator.geolocation.getCurrentPosition(
 
-async (pos) => {
+(pos) => {
 
 window.lat = pos.coords.latitude;
-
 window.lon = pos.coords.longitude;
 
-try {
-
-let response = await fetch(
-
-`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
-
-);
-
-let data = await response.json();
-
-let city =
-
-data.address.city ||
-
-data.address.town ||
-
-data.address.village ||
-
-"Unknown";
-
 document.getElementById("location").innerHTML =
-
-`📍 Location: ${city}`;
-
-}
-
-catch {
-
-document.getElementById("location").innerHTML =
-
 "📍 Location detected";
 
 }
 
-},
-
-() => {
-
-document.getElementById("location").innerHTML =
-
-"⚠️ Allow location access";
-
-}
-
 );
-
-}
 
 }
 
 getLocation();
 
-// ➕ ADD CONTACT
+/* ADD CONTACT */
 
 function addContact() {
 
-let name = document.getElementById("name").value.trim();
-let phone = document.getElementById("phone").value.trim();
+let name =
+document.getElementById("name").value.trim();
+
+let phone =
+document.getElementById("phone").value.trim();
 
 if (!name || !phone) {
 output("⚠️ Enter details!");
 return;
 }
 
-// Check duplicates
-let exists = contacts.some(c =>
-c.phone === phone
-);
-
-if (exists) {
-output("❌ Duplicate contact!");
-return;
-}
-
-// Add contact
 contacts.push({ name, phone });
 
-// Save permanently
-localStorage.setItem("contacts", JSON.stringify(contacts));
+localStorage.setItem(
+"contacts",
+JSON.stringify(contacts)
+);
 
 output("✅ Contact Saved!");
 
 }
 
-// 📞 VIEW CONTACTS
+/* VIEW CONTACTS */
 
 function viewContacts() {
 
@@ -235,8 +297,10 @@ function deleteContact(index) {
 
 contacts.splice(index, 1);
 
-// Update storage
-localStorage.setItem("contacts", JSON.stringify(contacts));
+localStorage.setItem(
+"contacts",
+JSON.stringify(contacts)
+);
 
 viewContacts();
 
@@ -244,17 +308,21 @@ viewContacts();
 
 function editContact(index) {
 
-let newName = prompt("Edit Name:", contacts[index].name);
-let newPhone = prompt("Edit Phone:", contacts[index].phone);
+let newName =
+prompt("Edit Name:", contacts[index].name);
+
+let newPhone =
+prompt("Edit Phone:", contacts[index].phone);
 
 if (newName && newPhone) {
 
-contacts[index] = {
-name: newName,
-phone: newPhone
-};
+contacts[index] =
+{ name: newName, phone: newPhone };
 
-localStorage.setItem("contacts", JSON.stringify(contacts));
+localStorage.setItem(
+"contacts",
+JSON.stringify(contacts)
+);
 
 viewContacts();
 
@@ -262,204 +330,71 @@ viewContacts();
 
 }
 
-// 🚨 SOS COUNTDOWN
+/* 🚨 MAIN EMERGENCY */
 
-function triggerSOS() {
+function handleEmergency(type) {
 
-let count = 3;
+let data = EmergencyMap[type];
 
-let box = document.getElementById("output");
+let level = data.level;
 
-let timer = setInterval(() => {
-
-box.innerHTML = `🚨 Sending SOS in ${count}...`;
-
-count--;
-
-if (count < 0) {
-
-clearInterval(timer);
-
-sendSOS();
-
-}
-
-}, 1000);
-
-}
-
-
-// 📩 SEND SOS
-
-function sendSOS() {
-
-let locationText = document.getElementById("location").innerText;
+let message = data.msg;
 
 let mapLink =
-
 window.lat ?
-
 `https://www.google.com/maps?q=${lat},${lon}`
-
 : "";
 
-let message =
+let numbers =
+contacts.map(c => c.phone);
 
-`🚨 EMERGENCY!\n${locationText}\n${mapLink}`;
+let fullMessage =
 
-window.location.href =
+`🚨 SOS ALERT 🚨
 
-`sms:?body=${encodeURIComponent(message)}`;
+${message}
 
-output("🚨 SOS Ready!");
-
-}
-
-
-// 📨 SEND TO ALL
-
-function sendToAll() {
-
-if (contacts.length === 0) {
-
-output("⚠️ No contacts!");
-
-return;
-
-}
-
-let locationText =
-
-document.getElementById("location").innerText;
-
-let numbers = contacts.map(c => c.phone).join(",");
-
-let mapLink =
-
-window.lat ?
-
-`https://www.google.com/maps?q=${lat},${lon}`
-
-: "";
-
-let message =
-
-`🚨 EMERGENCY!\n${locationText}\n${mapLink}`;
+📍 Location:
+${mapLink}`;
 
 window.location.href =
+`sms:${numbers.join(",")}?body=${encodeURIComponent(fullMessage)}`;
 
-`sms:${numbers}?body=${encodeURIComponent(message)}`;
-
-output("📨 Alert ready!");
-
-}
-
-
-// 📞 CALL POLICE
-
-function callPolice() {
-
-window.location.href = "tel:100";
-
-}
-
-
-// 🎤 VOICE SOS
-
-function startVoice() {
-
-let recognition =
-
-new (window.SpeechRecognition ||
-
-window.webkitSpeechRecognition)();
-
-recognition.start();
-
-recognition.onresult = function(event) {
-
-let speech =
-
-event.results[0][0].transcript.toLowerCase();
-
-if (speech.includes("help")) {
-
-triggerSOS();
-
-}
-
-};
-
-}
-
-
-// 📳 SHAKE DETECTION
-
-let lastX = null;
-
-window.addEventListener("devicemotion", function(event) {
-
-let x = event.accelerationIncludingGravity.x;
-
-if (lastX !== null) {
-
-let diff = Math.abs(x - lastX);
-
-if (diff > 15) {
-
-triggerSOS();
-
+if (level >= 7) {
+startCalling(numbers, level);
 }
 
 }
 
-lastX = x;
+/* CALL SYSTEM */
+
+function startCalling(numbers, level) {
+
+let repeat =
+(level >= 10) ? 3 : 1;
+
+let delay = 0;
+
+for (let r = 0; r < repeat; r++) {
+
+numbers.forEach(num => {
+
+setTimeout(() => {
+
+window.location.href =
+`tel:${num}`;
+
+}, delay);
+
+delay += 15000;
 
 });
 
-
-// 🛣️ ROUTE
-
-function findRoute() {
-
-let blocked =
-
-document.getElementById("route").value;
-
-if (blocked === "Market-Hospital") {
-
-output(
-
-"🛣️ Safe Route:<br>Home → School → Shelter → Hospital"
-
-);
-
-}
-
-else if (blocked === "Home-Market") {
-
-output(
-
-"🛣️ Safe Route:<br>Home → School → Hospital"
-
-);
-
-}
-
-else {
-
-output(
-
-"🛣️ Default Route:<br>Home → Market → Hospital"
-
-);
-
 }
 
 }
 
-
-// Output helper
+/* OUTPUT */
 
 function output(msg) {
 
@@ -467,16 +402,7 @@ document.getElementById("output").innerHTML = msg;
 
 }
 
-
-// Service Worker
-
-if ("serviceWorker" in navigator) {
-
-navigator.serviceWorker.register("service-worker.js");
-
-}
-
-// Smooth splash hide
+/* Splash */
 
 setTimeout(() => {
 
@@ -495,5 +421,4 @@ document.getElementById("mainApp").style.display = "block";
 </script>
 
 </body>
-
 </html>
