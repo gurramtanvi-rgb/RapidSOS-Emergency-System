@@ -12,6 +12,14 @@
 
 <body>
 
+  <div id="splash">
+  <div class="container">
+    <div class="text">Your Safety Companion.......</div>
+    <img src="icon.png" class="splash-icon">
+  </div>
+</div>  
+
+<div id="mainApp" style="display:none;">
 <div class="phone">
 
 <h2>🚨 RapidSOS</h2>
@@ -74,6 +82,7 @@
 
 <div id="output"></div>
 
+</div>
 </div>
 
 <script>
@@ -455,11 +464,27 @@ document.getElementById("output").innerHTML = msg;
 
 // Service Worker
 
-if ("serviceWorker" in navigator) {
+//if ("serviceWorker" in navigator) {
 
-navigator.serviceWorker.register("service-worker.js");
+//navigator.serviceWorker.register("service-worker.js");
 
-}
+//}
+
+// Smooth splash hide
+
+setTimeout(() => {
+
+document.getElementById("splash").style.opacity = "0";
+
+setTimeout(() => {
+
+document.getElementById("splash").style.display = "none";
+
+document.getElementById("mainApp").style.display = "block";
+
+}, 500);
+
+}, 2000);
 
 </script>
 
