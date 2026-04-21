@@ -531,17 +531,22 @@ function toast(msg, type="", dur=3200) {
 
 // ─── LOCATION ────────────────────────────────────────────────────────────────
 function initLocation() {
+
   if (!navigator.geolocation) {
     setLocUI("GPS unavailable", false);
     return;
   }
+
   document.getElementById("loc-txt").textContent = "Locating…";
   document.getElementById("loc-txt").className = "loc-txt";
+
   document.getElementById("stat-gps").textContent = "…";
   document.getElementById("stat-gps").className = "stat-val";
 
   navigator.geolocation.getCurrentPosition(
+
     pos => {
+
       window.lat = pos.coords.latitude;
       window.lon = pos.coords.longitude;
       window.locAccuracy = Math.round(pos.coords.accuracy);
@@ -549,29 +554,78 @@ function initLocation() {
       const latStr = lat.toFixed(5);
       const lonStr = lon.toFixed(5);
 
-      document.getElementById("loc-txt").textContent = `${latStr}, ${lonStr}`;
-      document.getElementById("loc-txt").className = "loc-txt active";
-      document.getElementById("stat-gps").textContent = "Active";
-      document.getElementById("stat-gps").className = "stat-val ok";
-      document.getElementById("stat-acc").textContent = `±${locAccuracy}m`;
-      document.getElementById("stat-acc").className = "stat-val ok";
-
-      // Location panel
+      // Keep coordinates internally
       document.getElementById("coord-lat").textContent = latStr;
       document.getElementById("coord-lon").textContent = lonStr;
-      document.getElementById("acc-val").textContent = `±${locAccuracy} metres`;
-      document.getElementById("maps-link").href = `https://maps.google.com/?q=${lat},${lon}`;
+
+      document.getElementById("acc-val").textContent =
+        `±${locAccuracy} metres`;
+
+      document.getElementById("maps-link").href =
+        `https://maps.google.com/?q=${lat},${lon}`;
+
+      // ✅ NEW: Get location name
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+        .then(res => res.json())
+        .then(data => {
+
+          const place =
+            data.address.city ||
+            data.address.town ||
+            data.address.village ||
+            data.address.state ||
+            "Location detected";
+
+          // Show place name instead of coordinates
+          document.getElementById("loc-txt").textContent = place;
+          document.getElementById("loc-txt").className = "loc-txt active";
+
+        })
+        .catch(() => {
+
+          // fallback if API fails
+          document.getElementById("loc-txt").textContent =
+            "Location detected";
+
+        });
+
+      // Status update
+      document.getElementById("stat-gps").textContent = "Active";
+      document.getElementById("stat-gps").className = "stat-val ok";
+
+      document.getElementById("stat-acc").textContent =
+        `±${locAccuracy}m`;
+
+      document.getElementById("stat-acc").className = "stat-val ok";
 
       toast(`📍 GPS locked — ±${locAccuracy}m accuracy`, "success");
+
     },
+
     err => {
-      const msgs = {1:"Permission denied", 2:"Position unavailable", 3:"Timeout"};
+
+      const msgs = {
+        1: "Permission denied",
+        2: "Position unavailable",
+        3: "Timeout"
+      };
+
       const m = msgs[err.code] || "GPS error";
+
       setLocUI(m, true);
+
       toast(`⚠️ Location: ${m}`, "danger");
+
     },
-    {enableHighAccuracy: true, timeout: 14000, maximumAge: 20000}
+
+    {
+      enableHighAccuracy: true,
+      timeout: 14000,
+      maximumAge: 20000
+    }
+
   );
+
 }
 
 function retryLocation() {
