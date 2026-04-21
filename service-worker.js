@@ -1,4 +1,4 @@
-const CACHE_NAME = "rapidsos-v2";
+const CACHE_NAME = "rapidsos-v3";
 
 /* Files to cache */
 
